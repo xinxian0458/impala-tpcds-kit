@@ -40,6 +40,7 @@ public class GenTable extends Configured implements Tool {
         options.addOption("t","table", true, "table");
         options.addOption("d","dir", true, "dir");
         options.addOption("p", "parallel", true, "parallel");
+        options.addOption("b", "distribution", true, "distribution");
         CommandLine line = parser.parse(options, remainingArgs);
 
         if(!(line.hasOption("scale") && line.hasOption("dir"))) {
@@ -66,7 +67,12 @@ public class GenTable extends Configured implements Tool {
           return 1;
         }
 
-        Path in = genInput(table, scale, parallel);
+        String distribution = "$TPCDS_ROOT/tools/tpcds.idx";
+        if(line.hasOption("distribution")) {
+          distribution = line.getOptionValue("distribution");
+        }
+
+        Path in = genInput(table, scale, parallel, distribution);
 
         Path dsdgen = copyJar(new File("target/lib/dsdgen.jar"));
         URI dsuri = dsdgen.toUri();
@@ -129,7 +135,7 @@ public class GenTable extends Configured implements Tool {
       return dst; 
     }
 
-    public Path genInput(String table, int scale, int parallel) throws Exception {
+    public Path genInput(String table, int scale, int parallel, String distribution) throws Exception {
         long epoch = System.currentTimeMillis()/1000;
 
         Path in = new Path("/tmp/"+table+"_"+scale+"-"+epoch);
@@ -137,9 +143,9 @@ public class GenTable extends Configured implements Tool {
         FSDataOutputStream out = fs.create(in);
         for(int i = 1; i <= parallel; i++) {
           if(table.equals("all")) {
-            out.writeBytes(String.format("./dsdgen -dir $DIR -force Y -scale %d -parallel %d -child %d\n", scale, parallel, i));
+            out.writeBytes(String.format("./dsdgen -dir $DIR -force Y -scale %d -parallel %d -child %d -distributions %s -terminate N\n", scale, parallel, i, distribution));
           } else {
-            out.writeBytes(String.format("./dsdgen -dir $DIR -table %s -force Y -scale %d -parallel %d -child %d\n", table, scale, parallel, i));
+            out.writeBytes(String.format("./dsdgen -dir $DIR -table %s -force Y -scale %d -parallel %d -child %d -distributions %s -terminate N\n", table, scale, parallel, i, distribution));
           }
         }
         out.close();
