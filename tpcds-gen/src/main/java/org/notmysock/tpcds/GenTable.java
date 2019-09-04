@@ -192,13 +192,15 @@ public class GenTable extends Configured implements Tool {
             child = cmd[i+1];
           }
         }
-        System.out.println("Execute cmd: " + cmd);
         Process p = Runtime.getRuntime().exec(cmd, null, new File("dsdgen/tools/"));
         int status = p.waitFor();
         if(status != 0) {
           String err = readToString(p.getErrorStream());
           String input = readToString(p.getInputStream());
-          throw new InterruptedException("Process failed with status code " + status + "\n" + err + "\n output\n" + input);
+          throw new InterruptedException("Process failed with status code " + status + "\n"
+        		  + "Execute cmd: " + cmd + "\n"
+        		  + "Error " + err + "\n" 
+        		  +	"Output " + input + "\n");
         }
 
         File cwd = new File(".");
