@@ -198,7 +198,7 @@ public class GenTable extends Configured implements Tool {
           String err = readToString(p.getErrorStream());
           String input = readToString(p.getInputStream());
           throw new InterruptedException("Process failed with status code " + status + "\n"
-        		  + "Execute cmd: " + cmd + "\n"
+        		  + "Execute cmd: " + command.toString() + "\n"
         		  + "Error " + err + "\n" 
         		  +	"Output " + input + "\n");
         }
